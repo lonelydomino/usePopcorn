@@ -64,10 +64,8 @@ export default function App() {
         </Box>
 
         <Box>
-          <>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
-          </>
         </Box>
       </Main>
     </>
@@ -212,3 +210,4 @@ const Box = ({ children }) => {
     </div>
   );
 };
+
