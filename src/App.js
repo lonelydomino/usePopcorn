@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { MovieList } from "./components/MovieList";
 import { WatchedSummary } from "./components/WatchedSummary";
 import { Box } from "./components/Box";
@@ -16,7 +16,10 @@ export const KEY = "5656379d";
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(() => {
+    const storedValue = localStorage.getItem("watched")
+    return JSON.parse(storedValue)
+  });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -30,28 +33,42 @@ export default function App() {
   };
 
   const handleAddWatched = (m) => {
-    setWatched((watched) =>[...watched, m])
+    setWatched((watched) => [...watched, m]);
+    // localStorage.setItem('watched', JSON.stringify([...watched, m ]))
   };
 
   const handleDeleteWatched = (id) => {
-    setWatched(watched => watched.filter(movie => movie.imdbID !== id))
-  }
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+  };
+
+  
+
+ useEffect(() => {
+    localStorage.setItem('watched', JSON.stringify(watched))
+
+ },[watched])
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
         setError("");
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          { signal: controller.signal }
         );
         if (!res.ok)
           throw new Error("Something went wrong with fetching movies");
         const data = await res.json();
         if (data.Response === "False") throw new Error("Movie not found");
         setMovies(data.Search);
+        setError("");
       } catch (err) {
-        setError(err.message);
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -60,7 +77,12 @@ export default function App() {
       setMovies([]);
       setError("");
     }
+    handleCloseMovie()
     fetchMovies();
+
+    return () => {
+      controller.abort();
+    };
   }, [query]);
 
   return (
@@ -90,7 +112,10 @@ export default function App() {
             <>
               {" "}
               <WatchedSummary watched={watched} />
-              <WatchedMoviesList watched={watched} onDeleteWatched={handleDeleteWatched} />
+              <WatchedMoviesList
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched}
+              />
             </>
           )}
         </Box>

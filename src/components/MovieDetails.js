@@ -16,7 +16,9 @@ export const MovieDetails = ({
 
   const [userRating, setUserRating] = useState("");
 
-  const watchedUserRating = watched.find(movie => movie.imdbID === selectedId)?.userRating
+  const watchedUserRating = watched.find(
+    (movie) => movie.imdbID === selectedId
+  )?.userRating;
 
   const {
     Title: title,
@@ -44,7 +46,17 @@ export const MovieDetails = ({
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   };
-
+  useEffect(() => {
+    const callback = (e) => {
+      if(e.code === 'Escape'){
+        onCloseMovie()
+      }
+    }
+    document.addEventListener('keydown',callback)
+    return () => {
+      document.removeEventListener('keydown', callback)
+    }
+  }, [onCloseMovie])
   useEffect(() => {
     const getMovieDetails = async () => {
       setIsLoading(true);
@@ -59,9 +71,13 @@ export const MovieDetails = ({
   }, [selectedId]);
 
   useEffect(() => {
-    if (!title) return
-    document.title =  `Movie | ${title}`
-  }, [title])
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return () => {
+      document.title = 'usePopcorn'
+    }
+  }, [title]);
 
   return (
     <div className="details">
@@ -102,7 +118,12 @@ export const MovieDetails = ({
                     </button>
                   )}
                 </>
-              ) : <p>You rated this movie {watchedUserRating}<span> ⭐️</span></p>}
+              ) : (
+                <p>
+                  You rated this movie {watchedUserRating}
+                  <span> ⭐️</span>
+                </p>
+              )}
             </div>
             <p>
               <em>{plot}</em>
