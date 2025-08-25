@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { KEY } from "../App";
 import { Loader } from "./Loader";
 import StarRating from "./StarRating";
+import useKey from "../custom hooks/useKey";
 
 export const MovieDetails = ({
   selectedId,
@@ -9,6 +10,8 @@ export const MovieDetails = ({
   onAddWatched,
   watched,
 }) => {
+
+  
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
@@ -51,17 +54,10 @@ export const MovieDetails = ({
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   };
-  useEffect(() => {
-    const callback = (e) => {
-      if (e.code === "Escape") {
-        onCloseMovie();
-      }
-    };
-    document.addEventListener("keydown", callback);
-    return () => {
-      document.removeEventListener("keydown", callback);
-    };
-  }, [onCloseMovie]);
+ 
+  
+useKey("escape", onCloseMovie)
+
   useEffect(() => {
     const getMovieDetails = async () => {
       setIsLoading(true);

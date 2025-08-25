@@ -12,25 +12,24 @@ import { NavBar } from "./components/NavBar";
 import { Loader } from "./components/Loader";
 import { ErrorMessage } from "./components/ErrorMessage";
 import useMovies from "./custom hooks/useMovies";
+import useLocalStorageState from "./custom hooks/useLocalStorageState";
 
 export const KEY = "5656379d";
 
 export default function App() {
-  const [watched, setWatched] = useState(() => {
-    const storedValue = localStorage.getItem("watched")
-    return JSON.parse(storedValue)
-  });
+
+const [watched, setWatched] = useLocalStorageState([], "watched")
+
   const [selectedId, setSelectedId] = useState(null);
   const [query, setQuery] = useState("");
   const handleCloseMovie = () => {
     setSelectedId(null);
   };
-  const {movies, isLoading, error } = useMovies(query, handleCloseMovie)
+  const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
 
   const handleSelectMovie = (movieId) => {
     setSelectedId((selectedId) => (selectedId === movieId ? null : movieId));
   };
-  
 
   const handleAddWatched = (m) => {
     setWatched((watched) => [...watched, m]);
@@ -41,12 +40,8 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   };
 
-  useEffect(() => {
-    localStorage.setItem('watched', JSON.stringify(watched))
 
- },[watched])
 
- 
   return (
     <>
       <NavBar>
